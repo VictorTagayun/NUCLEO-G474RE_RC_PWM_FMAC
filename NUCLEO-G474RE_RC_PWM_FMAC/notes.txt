@@ -1,0 +1,107 @@
+Project : NUCLEO-G474RE_RC_PWM_FMAC (from NUCLEO-G474RE_RC_PWM_PID, see below)
+
+** ADC DMA Interrupt **
+removed
+
+** HRTIM Interrupt **
+removed IT request
+from HAL_HRTIM_WaveformCountStart_IT to HAL_HRTIM_WaveformCountStart
+** ADC HAL DMA **
+keep, no change
+removed HAL_ADC_ConvCpltCallback()
+
+** PID **
+removed main.c all old  private variables /* USER CODE BEGIN PV */
+removed VT_PID_Controller()
+
+** ADC Parameter setting **
+add
+/* CubeMX enables DMA interrupt even if not configured */
+HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
+1 offset = sign negative
+ 
+
+** FMAC **
+enabled
+enabled NVIC IT
+use FMAC_Buck_VoltageMode_HW_AN5305 as guide
+copy main.h all private defines /* USER CODE BEGIN Private defines */
+copy main.c all private variables /* USER CODE BEGIN PV */
+copy main.c all FMAC Configure peripheral /* USER CODE BEGIN 2 */ before ADC config
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+======== NUCLEO-G474RE_RC_PWM_PID =========
+
+** 20Khz **
+GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+pTimeBaseCfg.Period = 34000;
+pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL4;
+pCompareCfg.CompareValue = 20; // minimum value when speed is low, 50nS
+
+** 50Khz **
+GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+pTimeBaseCfg.Period = 27200;
+pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL8;
+pCompareCfg.CompareValue = 30; // minimum value when speed is low, 50nS
+
+** ADC HAL DMA **
+HAL_ADCEx_Calibration_Start
+HAL_ADC_Start_DMA
+
+** No ADC conversion **
+check HRTIM trigger ADC parameter trigger same as ADC paramater
+
+** HRTIM Interrupt **
+need to enable MAster HRTIM and enable 1 interrupt
+no need to generate IRQ Handler though
+interrupt duration = 4.8uS
+
+** ADC Interrupt **
+trying to avoid HRTIM Interrupt
+try to use ADC Interrupt
+cannot enter interrupt because HAL_ADC_Start_DMA
+if use HAL_ADC_Start_IT can enter IT
+interrupt duration = 1.6 - 2.6uS > this is probably due to ADC DMA interrupt is enabled
+when ADC DMA IT is disabled, duration is = 1.54uS
+
+** ADC DMA Interrupt **
+trying to avoid HRTIM Interrupt
+try to use ADC DMA Interrupt but double entry?
+use HAL_ADC_ConvCpltCallback, single entry and is after the double entry above
+
+** add button press to start **
+add keep all PID = 0 so will not mess up on start-up esp errorIntgr goint saturated
+and HRTIM1->sTimerxRegs[HRTIM_TIMERINDEX_TIMER_E].CMP1xR = 30; keep output zero
+so output will be zero
+  while(!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13))
+  {
+	  errorProp = 0;
+	  errorIntgr = 0;
+	  errorDiff = 0;
+	  HRTIM1->sTimerxRegs[HRTIM_TIMERINDEX_TIMER_E].CMP1xR = 30;
+  }
