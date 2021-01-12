@@ -56,10 +56,9 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern FMAC_HandleTypeDef hfmac;
+extern ADC_HandleTypeDef hadc1;
+extern HRTIM_HandleTypeDef hhrtim1;
 /* USER CODE BEGIN EV */
-
-extern void VT_FMAC_Controller(void);
 
 /* USER CODE END EV */
 
@@ -202,22 +201,53 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles FMAC interrupt.
+  * @brief This function handles ADC1 and ADC2 global interrupt.
   */
-void FMAC_IRQHandler(void)
+void ADC1_2_IRQHandler(void)
 {
-  /* USER CODE BEGIN FMAC_IRQn 0 */
+  /* USER CODE BEGIN ADC1_2_IRQn 0 */
 
-	  GPIOC->BSRR = (1<<11); // start
+	GPIOC->BSRR = (1<<11); // start
 
-  /* USER CODE END FMAC_IRQn 0 */
-  /* USER CODE BEGIN FMAC_IRQn 1 */
+  /* USER CODE END ADC1_2_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC1_2_IRQn 1 */
 
-	  VT_FMAC_Controller();
+  GPIOC->BSRR = (1<<(11+16)); // end
 
-    GPIOC->BSRR = (1<<(11+16)); // end + 16
+  /* USER CODE END ADC1_2_IRQn 1 */
+}
 
-  /* USER CODE END FMAC_IRQn 1 */
+/**
+  * @brief This function handles EXTI line[15:10] interrupts.
+  */
+void EXTI15_10_IRQHandler(void)
+{
+  /* USER CODE BEGIN EXTI15_10_IRQn 0 */
+
+  /* USER CODE END EXTI15_10_IRQn 0 */
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+  /* USER CODE BEGIN EXTI15_10_IRQn 1 */
+
+  /* USER CODE END EXTI15_10_IRQn 1 */
+}
+
+/**
+  * @brief This function handles HRTIM timer E global interrupt.
+  */
+void HRTIM1_TIME_IRQHandler(void)
+{
+  /* USER CODE BEGIN HRTIM1_TIME_IRQn 0 */
+
+	GPIOC->BSRR = (1<<11); // start
+
+  /* USER CODE END HRTIM1_TIME_IRQn 0 */
+  HAL_HRTIM_IRQHandler(&hhrtim1,HRTIM_TIMERINDEX_TIMER_E);
+  /* USER CODE BEGIN HRTIM1_TIME_IRQn 1 */
+
+  GPIOC->BSRR = (1<<(11+16)); // end
+
+  /* USER CODE END HRTIM1_TIME_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

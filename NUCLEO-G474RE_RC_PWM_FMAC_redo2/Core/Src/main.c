@@ -32,11 +32,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
-#define MAX_PHASE 27180
-#define MIN_PHASE 30
-#define SAT_LIMIT 25000
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,40 +43,28 @@
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 
-FMAC_HandleTypeDef hfmac;
-
 HRTIM_HandleTypeDef hhrtim1;
 
 UART_HandleTypeDef hlpuart1;
 
 /* USER CODE BEGIN PV */
 
-//__IO uint16_t Vout = 0U;
-//uint32_t Vtarget, pid_out_last, pid_out;
-//volatile int32_t error, last_error, errorProp, errorIntgr, errorDiff;
-//uint16_t Kp = 1;
-//uint16_t Ki = 100;
-//uint16_t Kd = 100;
-
 /* FMAC configuration structure */
-FMAC_FilterConfigTypeDef sFmacConfig;
+//FMAC_FilterConfigTypeDef sFmacConfig;
 
-/* Array of filter coefficients A (feedback coefficients) in Q1.15 format */
-static int16_t aFilterCoeffA[COEFF_VECTOR_A_SIZE] = {A1,A2,A3};
-
-/* Array of filter coefficients B (feed-forward taps) in Q1.15 format */
-static int16_t aFilterCoeffB[COEFF_VECTOR_B_SIZE] = {-B0,-B1,-B2,-B3};
-
-/* Array of output data to preload in Q1.15 format */
-static int16_t aOutputDataToPreload[COEFF_VECTOR_A_SIZE] = {0x0000, 0x0000, 0x0000};
+///* Array of filter coefficients A (feedback coefficients) in Q1.15 format */
+//static int16_t aFilterCoeffA[COEFF_VECTOR_A_SIZE] = {A1,A2,A3};
+//
+///* Array of filter coefficients B (feed-forward taps) in Q1.15 format */
+//static int16_t aFilterCoeffB[COEFF_VECTOR_B_SIZE] = {-B0,-B1,-B2,-B3};
+//
+///* Array of output data to preload in Q1.15 format */
+//static int16_t aOutputDataToPreload[COEFF_VECTOR_A_SIZE] = {0x0000, 0x0000, 0x0000};
 
 /* Expected number of calculated samples */
 uint16_t ExpectedCalculatedOutputSize = (uint16_t) 1;
 uint32_t *Fmac_Wdata;
 int16_t Fmac_output;
-
-/* Memorizes the number of active Resistors load */
-uint8_t NbrActiveLoad;
 
 uint32_t tmp;
 
@@ -94,19 +77,14 @@ static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_HRTIM1_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_FMAC_Init(void);
 /* USER CODE BEGIN PFP */
 
 static void VT_HRTIM1_Start_Output(void);
-volatile void VT_FMAC_Controller(void);
-//static void VT_PID_Controller(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-//&Vout = (uint32_t *) FMAC_WDATA;
 
 /* USER CODE END 0 */
 
@@ -142,81 +120,19 @@ int main(void)
   MX_LPUART1_UART_Init();
   MX_HRTIM1_Init();
   MX_ADC1_Init();
-  MX_FMAC_Init();
   /* USER CODE BEGIN 2 */
 
-  /*## Configure the FMAC peripheral ###########################################*/
-  sFmacConfig.InputBaseAddress  = INPUT_BUFFER_BASE;
-  sFmacConfig.InputBufferSize   = INPUT_BUFFER_SIZE;
-  sFmacConfig.InputThreshold    = INPUT_THRESHOLD;
-  sFmacConfig.CoeffBaseAddress  = COEFFICIENT_BUFFER_BASE;
-  sFmacConfig.CoeffBufferSize   = COEFFICIENT_BUFFER_SIZE;
-  sFmacConfig.OutputBaseAddress = OUTPUT_BUFFER_BASE;
-  sFmacConfig.OutputBufferSize  = OUTPUT_BUFFER_SIZE;
-  sFmacConfig.OutputThreshold   = OUTPUT_THRESHOLD;
-  sFmacConfig.pCoeffA           = aFilterCoeffA;
-  sFmacConfig.CoeffASize        = COEFF_VECTOR_A_SIZE;
-  sFmacConfig.pCoeffB           = aFilterCoeffB;
-  sFmacConfig.CoeffBSize        = COEFF_VECTOR_B_SIZE;
-  sFmacConfig.Filter            = FMAC_FUNC_IIR_DIRECT_FORM_1;
-  sFmacConfig.InputAccess       = FMAC_BUFFER_ACCESS_NONE;
-  sFmacConfig.OutputAccess      = FMAC_BUFFER_ACCESS_IT;
-  sFmacConfig.Clip              = FMAC_CLIP_ENABLED;
-  sFmacConfig.P                 = COEFF_VECTOR_B_SIZE;
-  sFmacConfig.Q                 = COEFF_VECTOR_A_SIZE;
-  sFmacConfig.R                 = KC_shift;
+//  /* Perform an ADC automatic self-calibration and enable ADC */
+//  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
+//
+//  /* Start ADC and DMA */
+////  Fmac_Wdata = (uint32_t *) FMAC_WDATA;
+//  HAL_ADC_Start_DMA(&hadc1,&tmp,1);
 
-  if (HAL_FMAC_FilterConfig(&hfmac, &sFmacConfig) != HAL_OK)
-  {
-    /* Configuration Error */
-    Error_Handler();
-  }
+	HAL_HRTIM_WaveformOutputStart(&hhrtim1, HRTIM_OUTPUT_TE1 );
+	HAL_HRTIM_WaveformCountStart_IT(&hhrtim1, HRTIM_TIMERID_TIMER_E);
 
-  /*## Preload the input and output buffers ####################################*/
-  if (HAL_FMAC_FilterPreload(&hfmac, NULL, INPUT_BUFFER_SIZE,
-                             aOutputDataToPreload, COEFF_VECTOR_A_SIZE) != HAL_OK)
-  {
-    /* Configuration Error */
-    Error_Handler();
-  }
-  /* Start calculation of IIR filter */
-   if (HAL_FMAC_FilterStart(&hfmac,&Fmac_output,&ExpectedCalculatedOutputSize) != HAL_OK)
-  {
-    /* Processing Error */
-    Error_Handler();
-  }
-
-  /* Run the ADC calibration in single-ended mode */
-  if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
-  {
-    /* Calibration Error */
-    Error_Handler();
-  }
-
-  /* Start ADC group regular conversion with DMA */
-  /* Start ADC and DMA */
-  Fmac_Wdata = (uint32_t *) FMAC_WDATA;
-  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *) Fmac_Wdata, 1) != HAL_OK)
-  {
-    /* ADC conversion start error */
-    Error_Handler();
-  }
-
-//  /* Start ADC group regular conversion with IT */
-//  if (HAL_ADC_Start_IT(&hadc1) != HAL_OK)
-//  {
-//    /* ADC conversion start error */
-//    Error_Handler();
-//  }
-
-  VT_HRTIM1_Start_Output();
-
-//  while(!HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13))
-//  {
-//	  HRTIM1->sTimerxRegs[HRTIM_TIMERINDEX_TIMER_E].CMP1xR = 0;
-//  }
-
-//  Vtarget = 2500;
+//  VT_HRTIM1_Start_Output();
 
   /* USER CODE END 2 */
 
@@ -224,12 +140,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
 //	  GPIOC->BSRR = (1<<11); // start
-//	  HAL_Delay(100);
-//	  GPIOC->BSRR = (1<<(11+16)); // end + 16
-//	  HAL_Delay(100);
 
+//	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//	  HAL_Delay(400);
+
+
+//	  GPIOC->BSRR = (1<<(11+16)); // end
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -311,7 +228,7 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_LEFT;
   hadc1.Init.GainCompensation = 0;
@@ -344,7 +261,7 @@ static void MX_ADC1_Init(void)
   sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_1;
-  sConfig.Offset = 3000;
+  sConfig.Offset = 2000;
   sConfig.OffsetSign = ADC_OFFSET_SIGN_NEGATIVE;
   sConfig.OffsetSaturation = DISABLE;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -361,32 +278,6 @@ static void MX_ADC1_Init(void)
 }
 
 /**
-  * @brief FMAC Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_FMAC_Init(void)
-{
-
-  /* USER CODE BEGIN FMAC_Init 0 */
-
-  /* USER CODE END FMAC_Init 0 */
-
-  /* USER CODE BEGIN FMAC_Init 1 */
-
-  /* USER CODE END FMAC_Init 1 */
-  hfmac.Instance = FMAC;
-  if (HAL_FMAC_Init(&hfmac) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN FMAC_Init 2 */
-
-  /* USER CODE END FMAC_Init 2 */
-
-}
-
-/**
   * @brief HRTIM1 Initialization Function
   * @param None
   * @retval None
@@ -398,7 +289,6 @@ static void MX_HRTIM1_Init(void)
 
   /* USER CODE END HRTIM1_Init 0 */
 
-  HRTIM_ADCTriggerCfgTypeDef pADCTriggerCfg = {0};
   HRTIM_TimeBaseCfgTypeDef pTimeBaseCfg = {0};
   HRTIM_TimerCtlTypeDef pTimerCtl = {0};
   HRTIM_TimerCfgTypeDef pTimerCfg = {0};
@@ -423,16 +313,6 @@ static void MX_HRTIM1_Init(void)
   {
     Error_Handler();
   }
-  pADCTriggerCfg.UpdateSource = HRTIM_ADCTRIGGERUPDATE_TIMER_E;
-  pADCTriggerCfg.Trigger = HRTIM_ADCTRIGGEREVENT13_TIMERE_CMP3;
-  if (HAL_HRTIM_ADCTriggerConfig(&hhrtim1, HRTIM_ADCTRIGGER_1, &pADCTriggerCfg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_HRTIM_ADCPostScalerConfig(&hhrtim1, HRTIM_ADCTRIGGER_1, 0x0) != HAL_OK)
-  {
-    Error_Handler();
-  }
   pTimeBaseCfg.Period = 27200;
   pTimeBaseCfg.RepetitionCounter = 1;
   pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL8;
@@ -442,6 +322,7 @@ static void MX_HRTIM1_Init(void)
     Error_Handler();
   }
   pTimerCtl.UpDownMode = HRTIM_TIMERUPDOWNMODE_UP;
+  pTimerCtl.TrigHalf = HRTIM_TIMERTRIGHALF_DISABLED;
   pTimerCtl.GreaterCMP3 = HRTIM_TIMERGTCMP3_EQUAL;
   pTimerCtl.GreaterCMP1 = HRTIM_TIMERGTCMP1_EQUAL;
   pTimerCtl.DualChannelDacEnable = HRTIM_TIMER_DCDE_DISABLED;
@@ -469,26 +350,34 @@ static void MX_HRTIM1_Init(void)
   pTimerCfg.DeadTimeInsertion = HRTIM_TIMDEADTIMEINSERTION_DISABLED;
   pTimerCfg.DelayedProtectionMode = HRTIM_TIMER_D_E_DELAYEDPROTECTION_DISABLED;
   pTimerCfg.UpdateTrigger = HRTIM_TIMUPDATETRIGGER_NONE;
-  pTimerCfg.ResetTrigger = HRTIM_TIMRESETTRIGGER_NONE;
+  pTimerCfg.ResetTrigger = HRTIM_TIMRESETTRIGGER_UPDATE;
   pTimerCfg.ResetUpdate = HRTIM_TIMUPDATEONRESET_ENABLED;
   pTimerCfg.ReSyncUpdate = HRTIM_TIMERESYNC_UPDATE_UNCONDITIONAL;
   if (HAL_HRTIM_WaveformTimerConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, &pTimerCfg) != HAL_OK)
   {
     Error_Handler();
   }
-  pCompareCfg.CompareValue = 400;
+  pCompareCfg.CompareValue = 10000;
   if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_1, &pCompareCfg) != HAL_OK)
   {
     Error_Handler();
   }
-  pCompareCfg.CompareValue = 27000;
+  pCompareCfg.CompareValue = 15000;
+  pCompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
+  pCompareCfg.AutoDelayedTimeout = 0x0000;
+
+  if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_2, &pCompareCfg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  pCompareCfg.CompareValue = 25000;
   if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_3, &pCompareCfg) != HAL_OK)
   {
     Error_Handler();
   }
   pOutputCfg.Polarity = HRTIM_OUTPUTPOLARITY_HIGH;
-  pOutputCfg.SetSource = HRTIM_OUTPUTSET_TIMPER;
-  pOutputCfg.ResetSource = HRTIM_OUTPUTRESET_TIMCMP1;
+  pOutputCfg.SetSource = HRTIM_OUTPUTSET_TIMPER|HRTIM_OUTPUTSET_TIMCMP2;
+  pOutputCfg.ResetSource = HRTIM_OUTPUTRESET_TIMCMP1|HRTIM_OUTPUTRESET_TIMCMP3;
   pOutputCfg.IdleMode = HRTIM_OUTPUTIDLEMODE_NONE;
   pOutputCfg.IdleLevel = HRTIM_OUTPUTIDLELEVEL_INACTIVE;
   pOutputCfg.FaultLevel = HRTIM_OUTPUTFAULTLEVEL_NONE;
@@ -583,13 +472,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(HRTIM_E1_INT_GPIO_Port, HRTIM_E1_INT_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PC13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  /*Configure GPIO pin : B1_Pin */
+  GPIO_InitStruct.Pin = B1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
@@ -598,12 +487,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : HRTIM_E1_INT_Pin */
-  GPIO_InitStruct.Pin = HRTIM_E1_INT_Pin;
+  /*Configure GPIO pin : PC11 */
+  GPIO_InitStruct.Pin = GPIO_PIN_11;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(HRTIM_E1_INT_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
@@ -613,91 +506,9 @@ static void VT_HRTIM1_Start_Output(void)
 {
 
 	HAL_HRTIM_WaveformOutputStart(&hhrtim1, HRTIM_OUTPUT_TE1 );
-	HAL_HRTIM_WaveformCountStart(&hhrtim1, HRTIM_TIMERID_TIMER_E);
+	HAL_HRTIM_WaveformCountStart_IT(&hhrtim1, HRTIM_TIMERID_TIMER_E);
 
 }
-
-volatile void VT_FMAC_Controller(void)
-{
-
-	  tmp = READ_REG(hfmac.Instance->RDATA);
-	  tmp = (tmp > 0x00007FFF ? 0 : tmp);
-
-	  if (tmp > 25000)
-		  tmp = 25000;
-	  if (tmp <= 10)
-		  tmp = 10;
-
-	  __HAL_HRTIM_SETCOMPARE( &hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_1, tmp);
-}
-
-//void VT_PID_Controller(void)
-//{
-//
-//	last_error = error;
-//	error = Vtarget - Vout;
-//
-//	errorProp = (Kp * error) / 10;
-//	errorIntgr = errorIntgr + ((Ki * error) / 10);
-//	errorDiff = error / Kd;
-//
-//	// check if the change is so much to prevent oscillations, see below "pid_out_diff"
-//	pid_out_last = pid_out;
-//
-//	if (errorIntgr > SAT_LIMIT)
-//	{
-//		errorIntgr = SAT_LIMIT;
-//	}
-//	if (errorIntgr < -(SAT_LIMIT))
-//	{
-//		errorIntgr = -(SAT_LIMIT);
-//	}
-//
-//	// my understanding
-//	//pid_out = Kp * error + errorSum * Ki + Kd * errorRate;
-//
-//	// from FW
-//	/*
-//	seterr = (-Kp * error) / 200;
-//	Int_term_Buck = Int_term_Buck + ((-Ki * error) / 200);
-//	pid_out = seterr + Int_term_Buck;
-//	 */
-//	pid_out =  errorProp + errorIntgr + errorDiff;
-//
-//	if (pid_out >= MAX_PHASE)
-//	{
-//		pid_out = MAX_PHASE;
-//	}
-//
-//	if (pid_out < MIN_PHASE)
-//	{
-//		pid_out = MIN_PHASE;
-//	}
-//
-//	//HRTIM1->sMasterRegs.MCMP1R = CurrentPhase;
-//	HRTIM1->sTimerxRegs[HRTIM_TIMERINDEX_TIMER_E].CMP1xR = pid_out;
-//	//__HAL_HRTIM_SETCOMPARE( &hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_1, pid_out);
-//
-//	// check if the change is so much to prevent oscillations, see above "pid_out_last"
-//	// pid_out_diff = pid_out - pid_out_last;
-//
-//}
-
-//void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-//{
-//  /* Prevent unused argument(s) compilation warning */
-//  UNUSED(hadc);
-//
-//  /* NOTE : This function should not be modified. When the callback is needed,
-//            function HAL_ADC_ConvCpltCallback must be implemented in the user file.
-//   */
-//  GPIOC->BSRR = (1<<11); // start
-//  GPIOC->BSRR = (1<<(11+16)); // end + 16
-//
-//
-//  VT_PID_Controller();
-//
-//}
 
 /* USER CODE END 4 */
 
