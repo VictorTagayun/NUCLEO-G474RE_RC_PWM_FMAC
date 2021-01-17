@@ -82,8 +82,8 @@ static void MX_ADC1_Init(void);
 static void MX_FMAC_Init(void);
 /* USER CODE BEGIN PFP */
 
-static void VT_HRTIM1_Start_Output(void);
 volatile void VT_FMAC_Controller(void);
+static void VT_HRTIM1_Start_Output(void);
 
 /* USER CODE END PFP */
 
@@ -168,25 +168,23 @@ int main(void)
     Error_Handler();
   }
 
-   /* Run the ADC calibration in single-ended mode */
-   if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
-   {
-     /* Calibration Error */
-     Error_Handler();
-   }
+  /* Run the ADC calibration in single-ended mode */
+  if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK)
+  {
+    /* Calibration Error */
+    Error_Handler();
+  }
 
-   /* Start ADC group regular conversion with DMA */
-   /* Start ADC and DMA */
-   Fmac_Wdata = (uint32_t *) FMAC_WDATA;
-   if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *) Fmac_Wdata, 1) != HAL_OK)
-   {
-     /* ADC conversion start error */
-     Error_Handler();
-   }
+  /* Start ADC group regular conversion with DMA */
+  /* Start ADC and DMA */
+  Fmac_Wdata = (uint32_t *) FMAC_WDATA;
+  if (HAL_ADC_Start_DMA(&hadc1, (uint32_t *) Fmac_Wdata, 1) != HAL_OK)
+  {
+    /* ADC conversion start error */
+    Error_Handler();
+  }
 
   VT_HRTIM1_Start_Output();
-
-//  VT_HRTIM1_Start_Output();
 
   /* USER CODE END 2 */
 
@@ -194,13 +192,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  GPIOC->BSRR = (1<<11); // start
-
-//	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-//	  HAL_Delay(400);
-
-
-//	  GPIOC->BSRR = (1<<(11+16)); // end
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -282,7 +273,7 @@ static void MX_ADC1_Init(void)
   /** Common config
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV4;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_LEFT;
   hadc1.Init.GainCompensation = 0;
@@ -315,7 +306,7 @@ static void MX_ADC1_Init(void)
   sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_1;
-  sConfig.Offset = 1024;
+  sConfig.Offset = 3000;
   sConfig.OffsetSign = ADC_OFFSET_SIGN_NEGATIVE;
   sConfig.OffsetSaturation = DISABLE;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -413,7 +404,6 @@ static void MX_HRTIM1_Init(void)
     Error_Handler();
   }
   pTimerCtl.UpDownMode = HRTIM_TIMERUPDOWNMODE_UP;
-  pTimerCtl.TrigHalf = HRTIM_TIMERTRIGHALF_DISABLED;
   pTimerCtl.GreaterCMP3 = HRTIM_TIMERGTCMP3_EQUAL;
   pTimerCtl.GreaterCMP1 = HRTIM_TIMERGTCMP1_EQUAL;
   pTimerCtl.DualChannelDacEnable = HRTIM_TIMER_DCDE_DISABLED;
@@ -448,20 +438,12 @@ static void MX_HRTIM1_Init(void)
   {
     Error_Handler();
   }
-  pCompareCfg.CompareValue = 2000;
+  pCompareCfg.CompareValue = 400;
   if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_1, &pCompareCfg) != HAL_OK)
   {
     Error_Handler();
   }
-  pCompareCfg.CompareValue = 15000;
-  pCompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
-  pCompareCfg.AutoDelayedTimeout = 0x0000;
-
-  if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_2, &pCompareCfg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  pCompareCfg.CompareValue = 25000;
+  pCompareCfg.CompareValue = 27000;
   if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_3, &pCompareCfg) != HAL_OK)
   {
     Error_Handler();
@@ -563,13 +545,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(HRTIM_E1_INT_GPIO_Port, HRTIM_E1_INT_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
@@ -578,12 +560,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  /*Configure GPIO pin : HRTIM_E1_INT_Pin */
+  GPIO_InitStruct.Pin = HRTIM_E1_INT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(HRTIM_E1_INT_GPIO_Port, &GPIO_InitStruct);
 
 }
 

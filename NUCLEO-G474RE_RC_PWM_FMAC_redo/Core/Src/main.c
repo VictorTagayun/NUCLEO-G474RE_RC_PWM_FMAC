@@ -77,8 +77,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_LPUART1_UART_Init(void);
-static void MX_HRTIM1_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_HRTIM1_Init(void);
 static void MX_FMAC_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -122,8 +122,8 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_LPUART1_UART_Init();
-  MX_HRTIM1_Init();
   MX_ADC1_Init();
+  MX_HRTIM1_Init();
   MX_FMAC_Init();
   /* USER CODE BEGIN 2 */
 
@@ -186,21 +186,12 @@ int main(void)
 
   VT_HRTIM1_Start_Output();
 
-//  VT_HRTIM1_Start_Output();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  GPIOC->BSRR = (1<<11); // start
-
-//	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-//	  HAL_Delay(400);
-
-
-//	  GPIOC->BSRR = (1<<(11+16)); // end
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -295,7 +286,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIG_HRTIM_TRG1;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc1.Init.DMAContinuousRequests = ENABLE;
-  hadc1.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+  hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc1.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
@@ -312,10 +303,10 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_11;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_1;
-  sConfig.Offset = 1024;
+  sConfig.Offset = 1000;
   sConfig.OffsetSign = ADC_OFFSET_SIGN_NEGATIVE;
   sConfig.OffsetSaturation = DISABLE;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -405,7 +396,7 @@ static void MX_HRTIM1_Init(void)
     Error_Handler();
   }
   pTimeBaseCfg.Period = 27200;
-  pTimeBaseCfg.RepetitionCounter = 1;
+  pTimeBaseCfg.RepetitionCounter = 0x00;
   pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL8;
   pTimeBaseCfg.Mode = HRTIM_MODE_CONTINUOUS;
   if (HAL_HRTIM_TimeBaseConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, &pTimeBaseCfg) != HAL_OK)
@@ -413,7 +404,6 @@ static void MX_HRTIM1_Init(void)
     Error_Handler();
   }
   pTimerCtl.UpDownMode = HRTIM_TIMERUPDOWNMODE_UP;
-  pTimerCtl.TrigHalf = HRTIM_TIMERTRIGHALF_DISABLED;
   pTimerCtl.GreaterCMP3 = HRTIM_TIMERGTCMP3_EQUAL;
   pTimerCtl.GreaterCMP1 = HRTIM_TIMERGTCMP1_EQUAL;
   pTimerCtl.DualChannelDacEnable = HRTIM_TIMER_DCDE_DISABLED;
@@ -453,15 +443,7 @@ static void MX_HRTIM1_Init(void)
   {
     Error_Handler();
   }
-  pCompareCfg.CompareValue = 15000;
-  pCompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
-  pCompareCfg.AutoDelayedTimeout = 0x0000;
-
-  if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_2, &pCompareCfg) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  pCompareCfg.CompareValue = 25000;
+  pCompareCfg.CompareValue = 27000;
   if (HAL_HRTIM_WaveformCompareConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, HRTIM_COMPAREUNIT_3, &pCompareCfg) != HAL_OK)
   {
     Error_Handler();
@@ -584,6 +566,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 

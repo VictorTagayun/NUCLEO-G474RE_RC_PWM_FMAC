@@ -344,7 +344,7 @@ static void MX_ADC1_Init(void)
   sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_1;
-  sConfig.Offset = 3000;
+  sConfig.Offset = 2048;
   sConfig.OffsetSign = ADC_OFFSET_SIGN_NEGATIVE;
   sConfig.OffsetSaturation = DISABLE;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -459,7 +459,7 @@ static void MX_HRTIM1_Init(void)
   pTimerCfg.StartOnSync = HRTIM_SYNCSTART_DISABLED;
   pTimerCfg.ResetOnSync = HRTIM_SYNCRESET_DISABLED;
   pTimerCfg.DACSynchro = HRTIM_DACSYNC_NONE;
-  pTimerCfg.PreloadEnable = HRTIM_PRELOAD_ENABLED;
+  pTimerCfg.PreloadEnable = HRTIM_PRELOAD_DISABLED;
   pTimerCfg.UpdateGating = HRTIM_UPDATEGATING_INDEPENDENT;
   pTimerCfg.BurstMode = HRTIM_TIMERBURSTMODE_MAINTAINCLOCK;
   pTimerCfg.RepetitionUpdate = HRTIM_UPDATEONREPETITION_DISABLED;
@@ -470,7 +470,7 @@ static void MX_HRTIM1_Init(void)
   pTimerCfg.DelayedProtectionMode = HRTIM_TIMER_D_E_DELAYEDPROTECTION_DISABLED;
   pTimerCfg.UpdateTrigger = HRTIM_TIMUPDATETRIGGER_NONE;
   pTimerCfg.ResetTrigger = HRTIM_TIMRESETTRIGGER_NONE;
-  pTimerCfg.ResetUpdate = HRTIM_TIMUPDATEONRESET_ENABLED;
+  pTimerCfg.ResetUpdate = HRTIM_TIMUPDATEONRESET_DISABLED;
   pTimerCfg.ReSyncUpdate = HRTIM_TIMERESYNC_UPDATE_UNCONDITIONAL;
   if (HAL_HRTIM_WaveformTimerConfig(&hhrtim1, HRTIM_TIMERINDEX_TIMER_E, &pTimerCfg) != HAL_OK)
   {

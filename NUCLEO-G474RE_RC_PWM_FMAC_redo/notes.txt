@@ -1,21 +1,30 @@
 Project : NUCLEO-G474RE_RC_PWM_FMAC_redo (straight to FMAC without PID)
 
+** Default PINS **
+
+** Clock Src **
+HSE -> PLLM(/6) -> N(x85) -> R(/2)
+
+** Debug ** 
+Trace Async SW
+
+** GPIO **
+PA5 = output LED
+PC13 = input
+PC11 = output
+add PA5 toogle LED
+
 ** HTRIM1E 50Khz **
 GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
 pTimeBaseCfg.Period = 27200;
 pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL8;
 pCompareCfg.CompareValue = 30; // minimum value when speed is low, 50nS
-
-** ADC Parameter setting **
-add DMA
-add
-/* CubeMX enables DMA interrupt even if not configured */
-HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
-aligment = right and no offset (test is FMAC IT will fire)
-add HAL_ADCEx_Calibration_Start();
-add HAL_ADC_Start_DMA();
-alignment = left
-offset = 1
+add ADC trigger on CMP3
+Ouput Set on Perios
+Output reset on CMP1
+add VT_HRTIM1_Start_Output (output ok)
+	HAL_HRTIM_WaveformOutputStart(&hhrtim1, HRTIM_OUTPUT_TE1 );
+	HAL_HRTIM_WaveformCountStart(&hhrtim1, HRTIM_TIMERID_TIMER_E);
 
 ** FMAC **
 enabled
@@ -28,6 +37,17 @@ copy main.c all FMAC Configure peripheral /* USER CODE BEGIN 2 */ before ADC con
 add volatile void VT_FMAC_Controller(void); in main.c
 add extern void VT_FMAC_Controller(void); in estm32g4xx_it.c
 call VT_FMAC_Controller(void) from FMAC IT
+
+** ADC Parameter setting **
+add DMA Periph to Memory (circular/WORD)
+alignment = left
+offset = 1
+add below
+/* CubeMX enables DMA interrupt even if not configured */
+HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
+add HAL_ADCEx_Calibration_Start();
+add HAL_ADC_Start_DMA();
+
 
 ** troubleshooting **
 No FMAC interrupt, add ADC interrupt ok

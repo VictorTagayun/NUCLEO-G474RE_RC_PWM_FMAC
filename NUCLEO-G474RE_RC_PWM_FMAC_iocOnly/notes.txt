@@ -1,26 +1,14 @@
-Project : NUCLEO-G474RE_RC_PWM_FMAC_redo (straight to FMAC without PID)
+Project : NUCLEO-G474RE_RC_PWM_FMAC_iocOnly 
+from : NUCLEO-G474RE_RC_PWM_FMAC
 
-** HTRIM1E 50Khz **
-GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-pTimeBaseCfg.Period = 27200;
-pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL8;
-pCompareCfg.CompareValue = 30; // minimum value when speed is low, 50nS
+** use G474RE_RC_PWM_FMAC.ioc**
 
-** ADC Parameter setting **
-add DMA
-add
-/* CubeMX enables DMA interrupt even if not configured */
-HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
-aligment = right and no offset (test is FMAC IT will fire)
-add HAL_ADCEx_Calibration_Start();
-add HAL_ADC_Start_DMA();
-alignment = left
-offset = 1
+** HTRIM1E **
+add VT_HRTIM1_Start_Output (output ok)
+	HAL_HRTIM_WaveformOutputStart(&hhrtim1, HRTIM_OUTPUT_TE1 );
+	HAL_HRTIM_WaveformCountStart(&hhrtim1, HRTIM_TIMERID_TIMER_E);
 
 ** FMAC **
-enabled
-enabled NVIC IT
-disable NVIC IT call handler
 use FMAC_Buck_VoltageMode_HW_AN5305 as guide
 copy main.h all private defines /* USER CODE BEGIN Private defines */
 copy main.c all private variables /* USER CODE BEGIN PV */
@@ -28,11 +16,6 @@ copy main.c all FMAC Configure peripheral /* USER CODE BEGIN 2 */ before ADC con
 add volatile void VT_FMAC_Controller(void); in main.c
 add extern void VT_FMAC_Controller(void); in estm32g4xx_it.c
 call VT_FMAC_Controller(void) from FMAC IT
-
-** troubleshooting **
-No FMAC interrupt, add ADC interrupt ok
-while 1 LED 1sec toggle not happening
-add 200mS led toggle in Error_Handler(void)
 
 ======== NUCLEO-G474RE_RC_PWM_FMAC =========
 
