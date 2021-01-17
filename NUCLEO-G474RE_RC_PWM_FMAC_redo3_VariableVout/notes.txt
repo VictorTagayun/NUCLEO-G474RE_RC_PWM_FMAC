@@ -1,0 +1,61 @@
+Project : NUCLEO-G474RE_RC_PWM_FMAC_redo3_VariableVout (straight to FMAC without PID)
+
+** Default PINS **
+
+** Clock Src **
+HSE -> PLLM(/6) -> N(x85) -> R(/2)
+
+** Debug ** 
+Trace Async SW
+
+** GPIO **
+PA5 = output LED
+PC13 = input
+PC11 = output
+add PA5 toogle LED
+
+** HTRIM1E 50Khz **
+mutiplier = 8 = pTimeBaseCfg.PrescalerRatio = HRTIM_PRESCALERRATIO_MUL8;
+period = 27200 = pTimeBaseCfg.Period = 27200;
+enable CMP1 = 30 = pCompareCfg.CompareValue = 30; // minimum value when speed is low, 50nS
+enable CMP3 = 2700 = for ADC trigger1
+GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+Ouput Set on Period
+Output reset on CMP1
+add VT_HRTIM1_Start_Output (output ok)
+	HAL_HRTIM_WaveformOutputStart(&hhrtim1, HRTIM_OUTPUT_TE1 );
+	HAL_HRTIM_WaveformCountStart(&hhrtim1, HRTIM_TIMERID_TIMER_E);
+
+** ADC Parameter setting **
+add DMA Periph to Memory (circular/WORD)
+alignment = left
+enable DMA Continous Request
+external trigger conv src = HRTIM trig1
+add Rank1 (regular conversion mode)
+offset = 1
+offset sign negative
+add below or disable NVIC IT of ADC
+/* CubeMX enables DMA interrupt even if not configured */
+HAL_NVIC_DisableIRQ(DMA1_Channel1_IRQn);
+add HAL_ADCEx_Calibration_Start();
+add HAL_ADC_Start_DMA();
+note:
+	alignment left = feedback and statup is better
+	alignment right = still ok at the moment but have some oscillations at start-up
+	offset sign negative = ok
+	offset sign positive = ADC full scale - offset = opposite and unpredictable	
+
+** FMAC **
+enabled
+enabled NVIC IT
+disable NVIC IT call handler
+use FMAC_Buck_VoltageMode_HW_AN5305 as guide
+copy main.h all private defines /* USER CODE BEGIN Private defines */
+copy main.c all private variables /* USER CODE BEGIN PV */
+copy main.c all FMAC Configure peripheral /* USER CODE BEGIN 2 */ before ADC config
+add volatile void VT_FMAC_Controller(void); in main.c
+add extern void VT_FMAC_Controller(void); in estm32g4xx_it.c
+call VT_FMAC_Controller(void) from FMAC IT
+
+** New Offset **
+use LL_ADC_SetOffset(ADC1, LL_ADC_OFFSET_1, LL_ADC_CHANNEL_11, offset);
