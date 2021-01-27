@@ -8,3 +8,5 @@ NUCLEO-G474RE_RC_PWM_FMAC_redo2   = troubleshooting, initially no feedback, test
 
 learning FMAC
 PWM output and feedback thru RC
+
+More info : https://www.linkedin.com/posts/victortagayun_weekendhobbyabrelectronics-funwithelectronics-activity-6753952834942844928-eF8g/
