@@ -41,3 +41,10 @@ Ch2 = Filtered signal and fed to the ADC
 [Test and study how FMAC (Filter Math ACcelerator) works](https://github.com/VictorTagayun/NUCLEO-G474RE_FMAC_Study_and_Analysis)  
 [DSP Software Study and Analysis](https://github.com/VictorTagayun/NUCLEO-G474RE_CMSIS_DSP_Tutorial)  
 ### Social Media : [LinkedIn](https://www.linkedin.com/posts/victortagayun_weekendhobbyabrelectronics-funwithelectronics-activity-6753952834942844928-eF8g/)
+
+*Disclaimer:*  
+
+*The projects posted here are for learning and educational purposes only.*  
+*The purpose of a certain project may be for testing a module and may be just a part of a whole project.*  
+*It should not be used in a production or commercial enviroonment.*  
+*Any cause of injury and/or death is the sole responsibility of the user.*  
