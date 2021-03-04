@@ -25,9 +25,13 @@ The filtered voltage is fed back to the ADC and then to the FMAC 3p3z internally
 The FMAC will calculate the PWM duty according to the set voltage and accordingly will change the PWM duty.
 
 RC circuit  
+Ch1 = PWM Output  
+Ch2 = Filtered signal and fed to the ADC  
 ![RC circuit](https://github.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC/blob/main/waveforms%26pixx(NUCLEO-G474RE_RC_PWM_FMAC)/IMG_2066.JPG)
 
 Voltage risetime and then went to close loop  
+Ch1 = PWM Output  
+Ch2 = Filtered signal and fed to the ADC  
 ![Vout](https://github.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC/blob/main/waveforms%26pixx(NUCLEO-G474RE_RC_PWM_FMAC)/DS1Z_QuickPrint40.jpg)
 
 Zoom in  
