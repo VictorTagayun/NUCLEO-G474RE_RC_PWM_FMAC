@@ -8,7 +8,7 @@ NUCLEO-G474RE_RC_PWM_FMAC_redo2   = troubleshooting, initially no feedback, test
 NUCLEO-G474RE_RC_PWM_FMAC_redo3   = variable output (to do)  
 
 ### Overview  
-Using FMAC as 3p3z feedback and use RC circuit to filter the PWM duty of PWM output as a feedback.
+Use FMAC as 3p3z feedback and RC circuit to filter the PWM duty of PWM output as a feedback.
 Then there is no need for actual converter to test the ff:
 1. functionality of 3p3z
 2. the code generated if there is a feedback happening
