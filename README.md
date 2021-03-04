@@ -1,11 +1,11 @@
 # Test and study how FMAC (Filter Math ACcelerator) works on 3p3z feedback  
 
 ### Project files included  
-NUCLEO-G474RE_RC_PWM_FMAC         = original
-NUCLEO-G474RE_RC_PWM_FMAC_iocOnly = troubleshooting, initially no feedback
-NUCLEO-G474RE_RC_PWM_FMAC_redo    = testing for consistensy and re-doing
-NUCLEO-G474RE_RC_PWM_FMAC_redo2   = troubleshooting, initially no feedback, testing and re-doing
-NUCLEO-G474RE_RC_PWM_FMAC_redo3   = variable output
+NUCLEO-G474RE_RC_PWM_FMAC         = original  
+NUCLEO-G474RE_RC_PWM_FMAC_iocOnly = troubleshooting, initially no feedback  
+NUCLEO-G474RE_RC_PWM_FMAC_redo    = testing for consistensy and re-doing  
+NUCLEO-G474RE_RC_PWM_FMAC_redo2   = troubleshooting, initially no feedback, testing and re-doing  
+NUCLEO-G474RE_RC_PWM_FMAC_redo3   = variable output  
 
 ### Overview  
 Using FMAC as 3p3z feedback and use RC circuit to filter the PWM duty of PWM output as a feedback.
