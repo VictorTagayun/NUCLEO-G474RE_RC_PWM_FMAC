@@ -1,4 +1,4 @@
-# Simple test and study how FMAC (Filter Math ACcelerator) works on 3p3z feedback  
+# Simple test and study how FMAC (Filter Math ACcelerator) works on 3p3z feedback using simple low pass RC circuit  
 
 ### Project files included  
 NUCLEO-G474RE_RC_PWM_FMAC         = original  
