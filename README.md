@@ -37,4 +37,7 @@ Ch2 = Filtered signal and fed to the ADC
 ### Zoom in  
 ![Zoom in](https://github.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC/blob/main/waveforms%26pixx(NUCLEO-G474RE_RC_PWM_FMAC)/DS1Z_QuickPrint39.jpg)
 
-### More info : [LinkedIn](https://www.linkedin.com/posts/victortagayun_weekendhobbyabrelectronics-funwithelectronics-activity-6753952834942844928-eF8g/)
+### Other reference :   
+[Test and study how FMAC (Filter Math ACcelerator) works](https://github.com/VictorTagayun/NUCLEO-G474RE_FMAC_Study_and_Analysis)  
+[DSP Software Study and Analysis](https://github.com/VictorTagayun/NUCLEO-G474RE_CMSIS_DSP_Tutorial)  
+### Social Media : [LinkedIn](https://www.linkedin.com/posts/victortagayun_weekendhobbyabrelectronics-funwithelectronics-activity-6753952834942844928-eF8g/)
