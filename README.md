@@ -15,7 +15,7 @@ Then there is no need for actual converter to test the ff:
 2. the code generated if there is a feedback happening
 
 
-## Software setup (to do)  
+## Software setup   
 
 ### GPIO Default pins 
 
