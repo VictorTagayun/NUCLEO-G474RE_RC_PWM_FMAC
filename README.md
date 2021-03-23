@@ -169,7 +169,7 @@ Ch2 = Filtered signal and fed to the ADC
 
 [Use FMAC for Realtime FIR Low/High Pass filter (IIR filter will be on future Project)](https://github.com/VictorTagayun/NUCLEO-G474RE_RealTime_FIR_IIR_FMAC)
 
-[Use PI/PID for feedbac control](https://github.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC)
+[Use PI/PID for feedback control](https://github.com/VictorTagayun/NUCLEO-G474RE_RC_PWM_FMAC)
 
 [DSP Software Study and Analysis](https://github.com/VictorTagayun/NUCLEO-G474RE_CMSIS_DSP_Tutorial)  
 
